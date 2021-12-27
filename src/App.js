@@ -15,9 +15,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { FixedSizeList } from 'react-window';
 import Divider from '@mui/material/Divider';
 import { blue, red, yellow, purple } from '@mui/material/colors';
-import { FixedSizeList } from 'react-window';
+import { Document, Page } from 'react-pdf';
 
 import { getTargets } from './data';
 import './style.css';
@@ -42,6 +43,21 @@ function Target(target) {
     </ListItem>
   );
 }
+
+function renderRow(targets, props) {
+  const { index, style } = props;
+
+  return (
+    <ListItem style={style} key={index} component="a" component="div" disablePadding >
+      <ListItemButton onClick={() => {
+          console.log('clicked ' + targets[index] );
+        }}>
+        <ListItemText primary={targets[index]} />
+      </ListItemButton>
+    </ListItem>
+  );
+}
+
 class TargetList extends React.Component {
   constructor(props) {
     super(props);
@@ -53,23 +69,26 @@ class TargetList extends React.Component {
   render() {
     return (
       <div>
-        <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-          <nav aria-label="secondary mailbox folders">
-            <List>
-              <ListItem key={'refresh'} disablePadding>
-                <ListItemButton
-                  onClick={() => {
-                    getTargets()
-                      .then((targets) => {
-                        this.setState({ targets: targets });
-                      });
-                  }}
-                >
-                  <ListItemText primary="Refresh" />
-                </ListItemButton>
-              </ListItem>
-            </List>
-          </nav>
+        <Box sx={{
+          height: '70vh',
+          width: '100%',
+          maxWidth: 360,
+          bgcolor: 'background.paper'
+        }}>
+          <List sx={{ height: '10vh' }}>
+            <ListItem key={'refresh'} disablePadding>
+              <ListItemButton
+                onClick={() => {
+                  getTargets()
+                    .then((targets) => {
+                      this.setState({ targets: targets });
+                    });
+                }}
+              >
+                <ListItemText primary="Refresh" />
+              </ListItemButton>
+            </ListItem>
+          </List>
           <Divider />
           <Box
             sx={{
@@ -77,13 +96,19 @@ class TargetList extends React.Component {
               bgcolor: 'background.paper',
             }}
           >
-            <List
-              sx={{
-                minHeight: '85vh',
-              }}
+            <Box
+              sx={{ width: '100%', height: 400, maxWidth: 360, bgcolor: 'background.paper' }}
             >
-              {this.state.targets.map(Target)}
-            </List>
+              <FixedSizeList
+                height={400}  // later: https://npmjs.com/package/react-virtualized-auto-sizer
+                width={'100%'}
+                itemSize={40}
+                itemCount={this.state.targets.length}
+                overscanCount={5}
+              >
+                {(props) => renderRow(this.state.targets, props)}
+              </FixedSizeList>
+            </Box>
           </Box>
         </Box>
       </div>
@@ -91,9 +116,31 @@ class TargetList extends React.Component {
   }
 }
 
+class DocumentView extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { target: null };
+  }
+  render() {
+    if (this.state.target) {
+      return <p> {this.state.target} </p>;
+    } else {
+      return (
+        <Container sx={{
+          bgcolor: red[50],
+          textAlign: 'center',
+          minHeight: '80vh',
+        }}>
+          Please select a target first.
+        </Container>
+      );
+    }
+  }
+}
+
 function Nav() {
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1, height: '10vh' }}>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -118,20 +165,20 @@ function Nav() {
 export default function App() {
   return (
     <div>
-      {Nav()}
       <Box
         sx={{
           flexGrow: 1,
           bgcolor: blue[50],
-          minHeight: 'calc(93vh)',
+          height: 'calc(95vh)',
         }}
       >
+        {Nav()}
         <Grid container>
           <Grid item xs={2}>
             <TargetList />
           </Grid>
           <Grid item xs={6}>
-            <Item>xs=6</Item>
+            <DocumentView />
           </Grid>
           <Grid item xs={4}>
             <Item>xs=3</Item>
