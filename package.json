@@ -13,6 +13,8 @@
     "@types/react": "17.0.38",
     "koa": "^2.13.4",
     "koa-logger": "^3.2.1",
+    "koa-mount": "^4.0.0",
+    "koa-static": "^5.0.0",
     "nodemon": "^2.0.15",
     "null": "2.0.0",
     "react": "17.0.2",

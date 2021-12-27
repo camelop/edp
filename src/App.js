@@ -18,6 +18,10 @@ import ListItemText from '@mui/material/ListItemText';
 import { FixedSizeList } from 'react-window';
 import Divider from '@mui/material/Divider';
 import { blue, red, yellow, purple } from '@mui/material/colors';
+
+import { pdfjs } from 'react-pdf';
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
 import { Document, Page } from 'react-pdf';
 
 import { getTargets } from './data';
@@ -44,14 +48,14 @@ function Target(target) {
   );
 }
 
-function renderRow(targets, props) {
+function renderTargetListRow(targets, props) {
   const { index, style } = props;
 
   return (
     <ListItem style={style} key={index} component="a" component="div" disablePadding >
       <ListItemButton onClick={() => {
-          console.log('clicked ' + targets[index] );
-        }}>
+        console.log('clicked ' + targets[index]);
+      }}>
         <ListItemText primary={targets[index]} />
       </ListItemButton>
     </ListItem>
@@ -106,7 +110,7 @@ class TargetList extends React.Component {
                 itemCount={this.state.targets.length}
                 overscanCount={5}
               >
-                {(props) => renderRow(this.state.targets, props)}
+                {(props) => renderTargetListRow(this.state.targets, props)}
               </FixedSizeList>
             </Box>
           </Box>
@@ -119,11 +123,46 @@ class TargetList extends React.Component {
 class DocumentView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { target: null };
+    this.state = {
+      target: "http://localhost:3001/static/pdf/example-pdf.pdf",
+      numPages: null,
+      pageNumber: 3,
+      width: 100
+    };
   }
+
+  componentDidMount() {
+    console.log("width+", this.container.offsetWidth)
+    this.setState({
+        width: this.container.offsetWidth,
+    });
+  }
+
   render() {
     if (this.state.target) {
-      return <p> {this.state.target} </p>;
+      // console.log("load " + this.state.target);
+      return (
+        <Container 
+        sx={{
+          width: '100%',
+          minHeight: '80vh',
+          backgroundColor: 'primary.dark',
+          padding: 0
+        }}
+        ref={el => (this.container = el)}
+        >
+          <div>
+            <Document
+              file={this.state.target}
+              onLoadSuccess={({numPages}) => {
+                this.setState({ numPages: numPages });
+              }}
+            >
+              <Page width={this.state.width - 50} pageNumber={this.state.pageNumber} />
+            </Document>
+          </div>
+        </Container>
+      );
     } else {
       return (
         <Container sx={{

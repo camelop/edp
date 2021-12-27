@@ -1,7 +1,10 @@
+const path = require('path')
 const Koa = require('koa');
 const logger = require('koa-logger');
 const router = require('@koa/router')();
 const cors = require('@koa/cors');
+const mount = require('koa-mount')
+const serve = require('koa-static')
 
 const app = new Koa();
 
@@ -19,5 +22,7 @@ const helloWorld = (ctx) => {
 router.get('/targets', helloWorld);
 
 app.use(router.routes());
+
+app.use(mount('/static',serve(path.join(__dirname, './static'))))
 
 app.listen(3001);
