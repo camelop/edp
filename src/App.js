@@ -31,9 +31,8 @@ const Item = styled(Paper)(({ theme }) => ({
 
 function Target(target) {
   return (
-    <ListItem component="a" disablePadding>
+    <ListItem component="a" disablePadding key={target}>
       <ListItemButton
-        key={target}
         onClick={() => {
           console.log('clicked ' + target);
         }}
@@ -48,7 +47,7 @@ class TargetList extends React.Component {
     super(props);
     this.state = { targets: [] };
     getTargets().then((targets) => {
-      this.state = { targets: targets };
+      this.setState({ targets: targets });
     });
   }
   render() {
@@ -57,15 +56,10 @@ class TargetList extends React.Component {
         <Box sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
           <nav aria-label="secondary mailbox folders">
             <List>
-              <ListItem disablePadding>
+              <ListItem key={'refresh'} disablePadding>
                 <ListItemButton
                   onClick={() => {
-                    console.log('Clicked');
                     getTargets()
-                      .then((targets) => {
-                        console.log(targets);
-                        return targets;
-                      })
                       .then((targets) => {
                         this.setState({ targets: targets });
                       });
